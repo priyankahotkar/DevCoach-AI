@@ -133,22 +133,39 @@ class AIStudentJourneyAPITester:
         return success, response
 
     def test_analyze_profile_multiple_platforms(self):
-        """Test profile analysis with multiple platforms"""
+        """Test profile analysis with multiple platforms - using real usernames"""
         data = {
             "github_username": "octocat",
-            "codeforces_username": "tourist",
-            "leetcode_username": "testuser",
+            "codeforces_username": "tourist", 
+            "leetcode_username": "lee215",
             "goal": "Become a full-stack developer",
             "domain": "Web Development"
         }
-        return self.run_test(
-            "Analyze Profile - Multiple Platforms",
+        success, response = self.run_test(
+            "Analyze Profile - Multiple Platforms (Real Users)",
             "POST",
             "analyze-profile",
             200,
             data=data,
             timeout=90  # Multiple API calls + AI generation
         )
+        
+        # Validate all three platforms have data
+        if success and isinstance(response, dict):
+            activity_data = response.get('activity_data', {})
+            platforms = ['github', 'leetcode', 'codeforces']
+            
+            print(f"   📊 Multi-Platform Data Validation:")
+            for platform in platforms:
+                platform_data = activity_data.get(platform, {})
+                if 'error' not in platform_data and platform_data:
+                    print(f"      ✅ {platform.capitalize()}: Data fetched successfully")
+                elif 'error' in platform_data:
+                    print(f"      ❌ {platform.capitalize()}: Error - {platform_data.get('error')}")
+                else:
+                    print(f"      ⚠️  {platform.capitalize()}: No data")
+        
+        return success, response
 
     def test_analyze_profile_invalid_github(self):
         """Test profile analysis with invalid GitHub username"""
