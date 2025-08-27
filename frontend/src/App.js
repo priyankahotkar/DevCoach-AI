@@ -159,11 +159,47 @@ function App() {
         case 'LeetCode':
           return (
             <div className="space-y-4">
-              <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                <div className="text-sm text-gray-600">
-                  {data.activity?.note || 'LeetCode data integration pending'}
+              {data.activity?.note ? (
+                <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                  <div className="text-sm text-gray-600">
+                    {data.activity.note}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{data.activity?.total_solved || 0}</div>
+                      <div className="text-sm text-gray-600">Total Solved</div>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{data.activity?.acceptance_rate || '0%'}</div>
+                      <div className="text-sm text-gray-600">Acceptance Rate</div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="text-center p-2 bg-emerald-50 rounded">
+                      <div className="font-bold text-emerald-600">{data.activity?.easy_solved || 0}</div>
+                      <div className="text-gray-600">Easy</div>
+                    </div>
+                    <div className="text-center p-2 bg-amber-50 rounded">
+                      <div className="font-bold text-amber-600">{data.activity?.medium_solved || 0}</div>
+                      <div className="text-gray-600">Medium</div>
+                    </div>
+                    <div className="text-center p-2 bg-red-50 rounded">
+                      <div className="font-bold text-red-600">{data.activity?.hard_solved || 0}</div>
+                      <div className="text-gray-600">Hard</div>
+                    </div>
+                  </div>
+                  
+                  {data.profile?.ranking && data.profile.ranking !== 'N/A' && (
+                    <div className="text-center">
+                      <span className="font-medium">Ranking:</span> {data.profile.ranking}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           );
         
