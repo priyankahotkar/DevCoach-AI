@@ -18,7 +18,7 @@ It provides real-time, personalized insights, recommendations, and learning road
 
 - **Frontend**: React.js, Tailwind CSS
 - **Backend**: Python (FastAPI/Flask)
-- **Database**: SQLite / PostgreSQL (based on configuration)
+- **Database**: MongoDB
 - **APIs Integrated**: LeetCode, GitHub, Codeforces
 - **Deployment**: Docker / Vercel (frontend) + Render/Heroku (backend)
 
