@@ -126,25 +126,69 @@ class PlatformDataFetcher:
 
     @staticmethod
     async def fetch_leetcode_stats(username: str) -> Dict[str, Any]:
-        """Fetch LeetCode user statistics (using unofficial method)"""
+        """Fetch LeetCode user statistics using unofficial API"""
         try:
-            # This is a simplified version - in production you might use a more robust scraping method
-            # For now, we'll return mock data to demonstrate the concept
-            return {
-                'profile': {
-                    'username': username,
-                    'real_name': 'Unknown',
-                    'ranking': 'N/A'
-                },
-                'activity': {
-                    'total_solved': 0,
-                    'easy_solved': 0,
-                    'medium_solved': 0,
-                    'hard_solved': 0,
-                    'acceptance_rate': 'N/A',
-                    'note': 'LeetCode data requires specialized scraping - showing placeholder data'
-                }
-            }
+            async with aiohttp.ClientSession() as session:
+                # Use the provided LeetCode API
+                leetcode_url = f"https://leetcode-api-pied.vercel.app/user/{username}"
+                async with session.get(leetcode_url) as response:
+                    if response.status != 200:
+                        raise HTTPException(status_code=404, detail=f"LeetCode user {username} not found")
+                    
+                    data = await response.json()
+                    
+                    # Extract relevant information from the API response
+                    profile_data = data.get('profile', {})
+                    submit_stats = data.get('submitStats', {})
+                    
+                    # Parse solved problems statistics
+                    ac_submission = submit_stats.get('acSubmissionNum', [])
+                    total_solved = 0
+                    easy_solved = 0
+                    medium_solved = 0
+                    hard_solved = 0
+                    
+                    for stat in ac_submission:
+                        difficulty = stat.get('difficulty', '').lower()
+                        count = stat.get('count', 0)
+                        if difficulty == 'all':
+                            total_solved = count
+                        elif difficulty == 'easy':
+                            easy_solved = count
+                        elif difficulty == 'medium':
+                            medium_solved = count
+                        elif difficulty == 'hard':
+                            hard_solved = count
+                    
+                    # Calculate acceptance rate
+                    total_submissions = submit_stats.get('totalSubmissionNum', [])
+                    total_accepted = next((item.get('count', 0) for item in total_submissions if item.get('difficulty') == 'All'), 0)
+                    total_submitted = next((item.get('submissions', 0) for item in total_submissions if item.get('difficulty') == 'All'), 1)
+                    acceptance_rate = round((total_accepted / max(total_submitted, 1)) * 100, 1) if total_submitted > 0 else 0
+                    
+                    return {
+                        'profile': {
+                            'username': username,
+                            'real_name': profile_data.get('realName', 'Unknown'),
+                            'ranking': profile_data.get('ranking', 'N/A'),
+                            'reputation': profile_data.get('reputation', 0),
+                            'github_link': profile_data.get('githubUrl', ''),
+                            'twitter_link': profile_data.get('twitterUrl', ''),
+                            'linkedin_link': profile_data.get('linkedinUrl', ''),
+                            'about_me': profile_data.get('aboutMe', '')
+                        },
+                        'activity': {
+                            'total_solved': total_solved,
+                            'easy_solved': easy_solved,
+                            'medium_solved': medium_solved,
+                            'hard_solved': hard_solved,
+                            'acceptance_rate': f"{acceptance_rate}%",
+                            'total_submissions': total_accepted,
+                            'contribution_points': profile_data.get('contributionPoints', 0),
+                            'reputation': profile_data.get('reputation', 0)
+                        }
+                    }
+                    
         except Exception as e:
             logger.error(f"Error fetching LeetCode data for {username}: {str(e)}")
             return {
