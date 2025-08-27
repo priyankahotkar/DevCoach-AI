@@ -336,6 +336,7 @@ def main():
     
     tester.test_analyze_profile_invalid_github()
     tester.test_analyze_profile_invalid_codeforces()
+    tester.test_analyze_profile_invalid_leetcode()
     tester.test_analyze_profile_no_usernames()
     
     # Print final results
