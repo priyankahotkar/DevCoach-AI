@@ -219,6 +219,34 @@ class AIStudentJourneyAPITester:
         
         return success, response
 
+    def test_analyze_profile_invalid_leetcode(self):
+        """Test profile analysis with invalid LeetCode username"""
+        data = {
+            "leetcode_username": "invalid_leetcode_user_12345",
+            "goal": "Test error handling",
+            "domain": "Testing"
+        }
+        success, response = self.run_test(
+            "Analyze Profile - Invalid LeetCode",
+            "POST",
+            "analyze-profile",
+            200,  # Should still return 200 but with error in response
+            data=data,
+            timeout=30
+        )
+        
+        # Check if error is properly handled in response
+        if success and isinstance(response, dict):
+            leetcode_data = response.get('activity_data', {}).get('leetcode', {})
+            if 'error' in leetcode_data:
+                print(f"   ✅ Error properly handled: {leetcode_data['error']}")
+            elif 'note' in leetcode_data.get('activity', {}):
+                print(f"   ✅ Error gracefully handled: {leetcode_data['activity']['note']}")
+            else:
+                print(f"   ⚠️  Expected error in LeetCode data but got: {leetcode_data}")
+        
+        return success, response
+
     def test_analyze_profile_no_usernames(self):
         """Test profile analysis with no usernames (should fail validation)"""
         data = {
