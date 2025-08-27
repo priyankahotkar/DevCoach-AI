@@ -90,20 +90,47 @@ class AIStudentJourneyAPITester:
         )
 
     def test_analyze_profile_leetcode_only(self):
-        """Test profile analysis with LeetCode username only"""
+        """Test profile analysis with LeetCode username only - using real user 'lee215'"""
         data = {
-            "leetcode_username": "testuser",
+            "leetcode_username": "lee215",
             "goal": "Improve problem solving",
             "domain": "Software Engineering"
         }
-        return self.run_test(
-            "Analyze Profile - LeetCode Only",
+        success, response = self.run_test(
+            "Analyze Profile - LeetCode Only (lee215)",
             "POST",
             "analyze-profile",
             200,
             data=data,
             timeout=60
         )
+        
+        # Validate LeetCode specific data structure
+        if success and isinstance(response, dict):
+            leetcode_data = response.get('activity_data', {}).get('leetcode', {})
+            if 'error' not in leetcode_data:
+                activity = leetcode_data.get('activity', {})
+                profile = leetcode_data.get('profile', {})
+                
+                print(f"   📊 LeetCode Data Validation:")
+                print(f"      Total Solved: {activity.get('total_solved', 'N/A')}")
+                print(f"      Easy Solved: {activity.get('easy_solved', 'N/A')}")
+                print(f"      Medium Solved: {activity.get('medium_solved', 'N/A')}")
+                print(f"      Hard Solved: {activity.get('hard_solved', 'N/A')}")
+                print(f"      Acceptance Rate: {activity.get('acceptance_rate', 'N/A')}")
+                print(f"      Ranking: {profile.get('ranking', 'N/A')}")
+                
+                # Validate expected fields are present
+                expected_activity_fields = ['total_solved', 'easy_solved', 'medium_solved', 'hard_solved', 'acceptance_rate']
+                for field in expected_activity_fields:
+                    if field in activity:
+                        print(f"      ✅ {field}: Present")
+                    else:
+                        print(f"      ❌ {field}: Missing")
+            else:
+                print(f"   ❌ LeetCode Error: {leetcode_data.get('error')}")
+        
+        return success, response
 
     def test_analyze_profile_multiple_platforms(self):
         """Test profile analysis with multiple platforms"""
